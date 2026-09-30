@@ -1,0 +1,358 @@
+/* ==========================================================================
+   Persistent HUD — the SKAI chrome, built from the Figma exports
+   (Figma 557:2699 / 557:4129; sound menu open: 557:2877).
+
+   Every asset in assets/skai/ is placed at its design coordinates on the
+   1959 × 1102 frame and sized from its own width/height, all multiplied by
+   --u (one design pixel; defined in base.css). Groups are anchored to the
+   corner they belong to, so the chrome holds together at any aspect ratio;
+   the two .rail-fill lines only show when the window is wider than the
+   design and the bottom rails need to reach the centred action.
+
+   The rails come and go with the action they bracket. The top-right rail
+   drops below 981px, the bottom rails below 761px.
+   ========================================================================== */
+
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  font-family: var(--font-hud);
+}
+.hud img { display: block; max-width: none; position: absolute; }
+#app.is-pre-game .hud { display: none; }
+/* while Dev is speaking, input is locked (js/app.js) — show it on the cursor */
+#app.is-narrating .stage, #app.is-narrating .stage *, #app.is-narrating .hud-cta *, #app.is-narrating .hud-back, #app.is-narrating .hud-hint { cursor: progress !important; }
+
+.hud button {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: #fff;
+  pointer-events: auto;
+}
+
+/* ---------- top-left: SKAI Space plate + back tab (557:2839) ---------- */
+
+.hud-tl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(277 * var(--u));
+  height: calc(131 * var(--u));
+}
+.hud-tl__plate { left: calc(74 * var(--u)); top: calc(-4 * var(--u)); width: calc(197.005 * var(--u)); height: calc(67.884 * var(--u)); }
+.hud-tl__skai  { left: calc(157.9 * var(--u)); top: calc(28 * var(--u)); width: calc(56.5422 * var(--u)); height: calc(14.7787 * var(--u)); }
+.hud-tl__space { left: calc(218.25 * var(--u)); top: calc(35.7 * var(--u)); width: calc(29.7134 * var(--u)); height: calc(8.96675 * var(--u)); }
+
+.hud-back {
+  position: absolute;
+  left: calc(-4 * var(--u));
+  top: calc(-4 * var(--u));
+  width: calc(165 * var(--u));
+  height: calc(131 * var(--u));
+  transition: transform .15s ease;
+}
+.hud-back img { left: 0; top: 0; width: calc(165 * var(--u)); height: calc(131 * var(--u)); }
+.hud-back:hover:not(:disabled) { transform: translateX(calc(3 * var(--u))); }
+.hud-back:active:not(:disabled) { transform: translateX(calc(-2 * var(--u))); }
+/* the back tab always looks the same — it simply does nothing where there is nowhere to go */
+.hud-back:disabled { cursor: default; }
+.hud-back:focus-visible { outline-offset: calc(-18 * var(--u)); }
+
+/* ---------- top-right: rail, sound + info hexes, timer (557:4306) ----------
+   Box origin = design (1484, 0), anchored to the right edge. */
+
+.hud-tr {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: calc(475.11 * var(--u));
+  height: calc(110.5 * var(--u));
+}
+.hud-tr__rail { left: calc(7.1 * var(--u)); top: calc(-12 * var(--u)); width: calc(522.901 * var(--u)); height: calc(73 * var(--u)); }
+
+.hud-hex {
+  position: absolute;
+  top: calc(16 * var(--u));
+  width: calc(89.1631 * var(--u));
+  height: calc(82.5091 * var(--u));
+  transition: transform .15s ease, filter .2s ease;
+}
+.hud-hex:hover { transform: translateY(calc(-3 * var(--u))); filter: brightness(1.06); }
+.hud-hex:active { transform: scale(.94); }
+.hud-hex:focus-visible { outline-offset: calc(-8 * var(--u)); border-radius: 50%; }
+
+.hud-sound {
+  position: absolute;
+  left: calc(88 * var(--u));
+  top: 0;
+  width: calc(89.1631 * var(--u));
+  height: calc(110.5 * var(--u));
+}
+.hud-hex--sound { left: 0; }
+.hud-hex__shape { left: 0; top: 0; width: calc(89.1631 * var(--u)); height: calc(82.5091 * var(--u)); }
+.hud-hex--sound .hud-hex__icon { left: calc(26.05 * var(--u)); top: calc(24 * var(--u)); width: calc(37.896 * var(--u)); height: calc(33 * var(--u)); transition: opacity .2s; }
+.hud-hex--sound.is-muted .hud-hex__icon { opacity: .45; }
+.hud-hex--sound.is-muted::after {
+  content: "";
+  position: absolute;
+  left: calc(24 * var(--u));
+  top: calc(39 * var(--u));
+  width: calc(44 * var(--u));
+  height: calc(5 * var(--u));
+  border-radius: calc(3 * var(--u));
+  background: #fff;
+  box-shadow: 0 0 0 calc(2 * var(--u)) #f5a524;
+  transform: rotate(-38deg);
+}
+.hud-hex--sound[aria-expanded="true"] { filter: brightness(1.08); }
+
+.hud-hex--info { left: calc(172 * var(--u)); }
+.hud-hex__turn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(73.93 * var(--u));
+  height: calc(64.03 * var(--u));
+  transform: translate(-50%, -50%) rotate(16.63deg);
+}
+.hud-hex__turn img { left: calc(1.29 * var(--u)); top: 0; width: calc(71.3417 * var(--u)); height: calc(64.025 * var(--u)); }
+.hud-hex__i {
+  position: absolute;
+  left: 50%;
+  top: calc(45.44 * var(--u));
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  font-size: calc(41.808 * var(--u));
+  line-height: normal;
+  color: #fff;
+  pointer-events: none;
+}
+
+.hud-timer {
+  position: absolute;
+  left: calc(265.47 * var(--u));
+  top: calc(18 * var(--u));
+  width: calc(188.974 * var(--u));
+  height: calc(77.7637 * var(--u));
+}
+.hud-timer img { left: 0; top: 0; width: calc(188.974 * var(--u)); height: calc(77.7637 * var(--u)); }
+.hud-timer__value {
+  position: absolute;
+  left: calc(91.8 * var(--u));
+  top: calc(17.56 * var(--u));
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: calc(34.425 * var(--u));
+  line-height: normal;
+  color: #fff;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.hud-timer.is-paused .hud-timer__value { animation: timerBlink 1.1s steps(2, jump-none) infinite; }
+@keyframes timerBlink { 50% { opacity: .35; } }
+
+/* sound menu (557:2865) — origin = design (1529, 94), i.e. (-43, 78) from the sound hex */
+.hud-menu {
+  position: absolute;
+  left: calc(-43 * var(--u));
+  top: calc(78 * var(--u));
+  width: calc(175 * var(--u));
+  height: calc(167 * var(--u));
+  z-index: 5;
+}
+.hud-menu__bg { left: 0; top: 0; width: calc(175 * var(--u)); height: calc(167 * var(--u)); }
+.hud-menu__item {
+  position: absolute;
+  left: calc(8 * var(--u));
+  width: calc(159 * var(--u));
+  height: calc(64 * var(--u));
+  border-radius: calc(10 * var(--u));
+  text-align: left;
+  transition: background .15s;
+}
+.hud-menu__item--replay { top: calc(18 * var(--u)); }
+.hud-menu__item--mute { top: calc(89 * var(--u)); }
+.hud-menu__item:hover, .hud-menu__item:focus-visible { background: rgba(255, 255, 255, .1); }
+.hud-menu__ico { left: calc(15 * var(--u)); top: calc(10 * var(--u)); width: calc(38.9008 * var(--u)); height: calc(38.9009 * var(--u)); }
+.hud-menu__ico-inner { left: calc(24.4 * var(--u)); top: calc(21.5 * var(--u)); width: calc(22.9916 * var(--u)); height: calc(15.699 * var(--u)); }
+.hud-menu__text {
+  position: absolute;
+  left: calc(71 * var(--u));
+  top: calc(29 * var(--u));
+  transform: translateY(-50%);
+  font-weight: 700;
+  font-size: calc(17.81 * var(--u));
+  line-height: normal;
+  color: #fff;
+  white-space: nowrap;
+}
+.hud-menu__item[aria-checked="true"] .hud-menu__text { color: #fdda76; }
+.hud-menu__item[aria-checked="true"] .hud-menu__ico { filter: drop-shadow(0 0 calc(4 * var(--u)) #fdda76); }
+
+/* ---------- right edge: progress ladder (557:2744) ---------- */
+
+.hud-ladder {
+  position: absolute;
+  right: 0;
+  top: calc(50% - 325 * var(--u));
+  width: calc(90 * var(--u));
+  height: calc(640 * var(--u));
+}
+.hud-ladder__plate { left: calc(0.38 * var(--u)); top: calc(2.5 * var(--u)); width: calc(89.6182 * var(--u)); height: calc(629.558 * var(--u)); }
+.hud-ladder__label {
+  position: absolute;
+  left: calc(47.5 * var(--u));
+  top: calc(44 * var(--u));
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: calc(35 * var(--u));
+  line-height: normal;
+  color: #fca01b;
+  white-space: nowrap;
+}
+.hud-ladder__label b { display: inline-block; font-weight: 700; }
+.hud-ladder__stripes { position: absolute; inset: 0; }
+/* each stripe is the 67.81 × 20 export turned into the 20 × 67.81 slot it fills in the design */
+.stripe {
+  position: absolute;
+  left: calc(42 * var(--u));
+  width: calc(20 * var(--u));
+  height: calc(67.8101 * var(--u));
+}
+.stripe__turn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(67.8101 * var(--u));
+  height: calc(20 * var(--u));
+  transform: translate(-50%, -50%) scaleX(-1) rotate(90deg);
+}
+.stripe__turn img { left: 0; top: 0; width: calc(67.8101 * var(--u)); height: calc(20 * var(--u)); }
+.stripe__on { opacity: 0; }
+.stripe.is-on .stripe__on { opacity: 1; }
+.hud-ladder__volt { width: calc(12.0002 * var(--u)); height: calc(12 * var(--u)); }
+.hud-ladder__volt--1 { left: calc(75 * var(--u)); top: calc(579 * var(--u)); }
+.hud-ladder__volt--2 { left: calc(24 * var(--u)); top: calc(614 * var(--u)); }
+.hud-ladder__volt--3 { left: calc(4 * var(--u)); top: calc(7 * var(--u)); transform: rotate(180deg) scaleY(-1); }
+.hud-ladder__volt--4 { left: calc(75 * var(--u)); top: calc(23 * var(--u)); transform: rotate(180deg) scaleY(-1); }
+
+/* ---------- bottom-left: hint bulb (557:2758) ---------- */
+
+.hud-hint {
+  position: absolute;
+  left: calc(47.56 * var(--u));
+  bottom: calc(40 * var(--u));
+  width: calc(116 * var(--u));
+  height: calc(99 * var(--u));
+}
+.hud-hint__disc { left: 0; top: 0; width: calc(116 * var(--u)); height: calc(99 * var(--u)); }
+.hud-hint__base { left: calc(46.23 * var(--u)); top: calc(30.3 * var(--u)); width: calc(35.3762 * var(--u)); height: calc(52.0252 * var(--u)); }
+.hud-hint__bulb { left: calc(30.62 * var(--u)); top: calc(14.6 * var(--u)); width: calc(68.1962 * var(--u)); height: calc(55.7132 * var(--u)); }
+.hud-hint:focus-visible { outline-offset: calc(-6 * var(--u)); border-radius: 50%; }
+
+/* ---------- bottom: rails, chevrons and the primary action (557:2797) ----------
+   Box origin = design y 902, full width. */
+
+.hud-cta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(200 * var(--u));
+  pointer-events: none;
+}
+.hud-cta__rails { position: absolute; inset: 0; pointer-events: none; }
+.rail--bl { left: 0; top: calc(33.5 * var(--u)); width: calc(813 * var(--u)); height: calc(30 * var(--u)); }
+.rail--br { right: calc(-4.45 * var(--u)); top: calc(90.5 * var(--u)); width: calc(796 * var(--u)); height: calc(30 * var(--u)); }
+.rail--double { right: calc(-53.45 * var(--u)); top: calc(90 * var(--u)); width: calc(489 * var(--u)); height: calc(22.5 * var(--u)); transform: scaleY(-1); }
+.rail-chev { top: calc(41 * var(--u)); width: calc(44 * var(--u)); height: calc(23.5 * var(--u)); transform: scaleY(-1); }
+.rail-chev--a { left: calc(334 * var(--u)); }
+.rail-chev--b { left: calc(308 * var(--u)); }
+.rail-fill {
+  position: absolute;
+  height: calc(5 * var(--u));
+  background: #fff;
+}
+.rail-fill--l { left: calc(812.5 * var(--u)); right: calc(50% + 150 * var(--u)); top: calc(58.5 * var(--u)); }
+.rail-fill--r { left: calc(50% + 150 * var(--u)); right: calc(791 * var(--u)); top: calc(90.5 * var(--u)); }
+
+.cta {
+  position: absolute;
+  left: calc(50% - 241.55 * var(--u));
+  top: calc(14 * var(--u));
+  width: calc(480.5 * var(--u));
+  height: calc(122 * var(--u));
+  transition: top .15s ease;
+}
+.cta:hover:not(:disabled) { top: calc(10 * var(--u)); }
+.cta:active:not(:disabled) { top: calc(17 * var(--u)); }
+.cta:disabled { cursor: not-allowed; }
+.cta__plate { left: calc(1.01 * var(--u)); top: calc(-6.21 * var(--u)); width: calc(475.725 * var(--u)); height: calc(135.125 * var(--u)); transition: filter .25s, opacity .25s; }
+/* no opacity here: the rails run behind the plate and would show through */
+.cta:disabled .cta__plate { filter: grayscale(.85) brightness(.92); }
+.cta:disabled .cta__label { opacity: .75; }
+.cta:hover:not(:disabled) .cta__plate { filter: brightness(1.1); }
+.cta__screw { width: calc(14.7701 * var(--u)); height: calc(15.987 * var(--u)); transform: rotate(-180deg) scaleX(-1); }
+.cta__screw--1 { left: calc(441.97 * var(--u)); top: calc(93.98 * var(--u)); }
+.cta__screw--2 { left: calc(411 * var(--u)); top: calc(30.96 * var(--u)); }
+.cta__screw--3 { left: calc(19.98 * var(--u)); top: calc(94.97 * var(--u)); }
+.cta__screw--4 { left: calc(54.07 * var(--u)); top: calc(12 * var(--u)); }
+.cta__slot { position: absolute; width: max(1px, calc(1 * var(--u))); height: calc(9 * var(--u)); background: #3c3b3b; }
+.cta__slot--1 { left: calc(449 * var(--u)); top: calc(98 * var(--u)); }
+.cta__slot--2 { left: calc(418 * var(--u)); top: calc(34 * var(--u)); }
+.cta__slot--3 { left: calc(27 * var(--u)); top: calc(98 * var(--u)); }
+.cta__slot--4 { left: calc(61 * var(--u)); top: calc(15 * var(--u)); }
+.cta__label {
+  position: absolute;
+  left: calc(228 * var(--u));
+  top: calc(71.5 * var(--u));
+  transform: translate(-50%, -50%);
+  max-width: calc(360 * var(--u));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: calc(34 * var(--u));
+  line-height: normal;
+  color: #fff;
+  text-transform: uppercase;
+}
+.cta[data-len="l"] .cta__label { font-size: calc(29 * var(--u)); }
+.cta[data-len="xl"] .cta__label { font-size: calc(25 * var(--u)); }
+.cta__progress {
+  position: absolute;
+  left: calc(96 * var(--u));
+  right: calc(96 * var(--u));
+  bottom: calc(18 * var(--u));
+  height: calc(5 * var(--u));
+  border-radius: calc(5 * var(--u));
+  background: rgba(255, 255, 255, .28);
+  overflow: hidden;
+  display: none;
+}
+.cta__progress i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); }
+.cta.is-pending .cta__progress { display: block; }
+.cta:focus-visible { outline: none; }
+.cta:focus-visible .cta__plate { filter: drop-shadow(0 0 calc(6 * var(--u)) #ffd23f); }
+
+.hud-cta.is-idle .cta,
+.hud-cta.is-idle .hud-cta__rails { visibility: hidden; }
+
+/* ---------- responsive chrome ---------- */
+
+@media (max-width: 980px) {
+  .hud .hud-tr__rail { display: none; }           /* top-right rail drops below 981px */
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud-cta { bottom: calc(-48 * var(--u)); }
+  .hud-hint { bottom: calc(18 * var(--u)); }
+}
+@media (max-width: 760px) {
+  .hud-cta__rails { display: none !important; }   /* bottom rails drop below 761px */
+  .hud-menu { transform: scale(1.45); transform-origin: 50% 0; }   /* keep the menu readable on phones */
+  .cta { left: calc(50% - 179.55 * var(--u)); }   /* clear the hint bulb, which the phone width leaves no room for */
+}

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1b52">
+  <meta name="description" content="The Fake News Detector — build a detector that spots suspicious messages before they spread.">
+  <meta property="og:title" content="The Fake News Detector">
+  <meta property="og:description" content="Build a detector that spots suspicious messages before they spread.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/thumbnails/fake-news-detector-thumbnail.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Fake News Detector">
+  <meta name="twitter:description" content="Build a detector that spots suspicious messages before they spread.">
+  <meta name="twitter:image" content="assets/thumbnails/fake-news-detector-thumbnail.png">
+  <title>The Fake News Detector</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2210.5%22 cy=%2210.5%22 r=%226.5%22 fill=%22none%22 stroke=%22%23f9a11b%22 stroke-width=%223%22/%3E%3Cpath d=%22M15.5 15.5 21 21%22 stroke=%22%230c2d8f%22 stroke-width=%223%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/scenes.css">
+  <link rel="stylesheet" href="css/one-device.css">
+  <link rel="stylesheet" href="css/phone-focus.css">
+  <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+<div id="app" class="is-pre-game" data-backdrop="clear">
+
+  <div class="backdrop" aria-hidden="true">
+    <div class="backdrop__img"></div>
+    <div class="backdrop__tint"></div>
+    <div class="backdrop__dim"></div>
+  </div>
+
+  <!-- ================= Persistent HUD — SKAI chrome, Figma 557:2699 / 557:4129 (sound menu open: 557:2877) =================
+       Every piece is the Figma export in assets/skai/, placed at its design coordinates on a 1959 × 1102 frame
+       and scaled with --u (css/hud.css). -->
+  <header class="hud" id="hud" aria-label="Mission controls">
+
+    <!-- top-left: SKAI Space plate + angled back tab (557:2839) -->
+    <div class="hud-tl">
+      <img class="hud-tl__plate" src="assets/skai/skai-plate.svg" width="197.005" height="67.884" alt="">
+      <button id="btnPause" class="hud-back" type="button" aria-label="Previous screen">
+        <img src="assets/skai/back-tab-orange.svg" width="165" height="131" alt="">
+      </button>
+      <img class="hud-tl__skai" src="assets/skai/skai-wordmark.svg" width="56.5422" height="14.7787" alt="SKAI">
+      <img class="hud-tl__space" src="assets/skai/skai-space.svg" width="29.7134" height="8.96675" alt="Space">
+    </div>
+
+    <!-- top-right: connector rail, sound + info hexes, timer (557:4306) -->
+    <div class="hud-tr">
+      <img class="hud-tr__rail" src="assets/skai/rail-top-right.svg" width="522.901" height="73" alt="">
+      <div class="hud-sound">
+        <button id="btnHudSound" class="hud-hex hud-hex--sound" type="button" aria-label="Sound options" aria-haspopup="menu" aria-expanded="false" aria-controls="soundMenu">
+          <img class="hud-hex__shape" src="assets/skai/hex-sound.svg" width="89.1631" height="82.5091" alt="">
+          <img class="hud-hex__icon" src="assets/skai/icon-speaker.svg" width="37.896" height="33" alt="">
+        </button>
+        <!-- sound menu (557:2865) -->
+        <div class="hud-menu" id="soundMenu" role="menu" hidden>
+          <img class="hud-menu__bg" src="assets/skai/sound-menu.svg" width="175" height="167" alt="">
+          <button class="hud-menu__item hud-menu__item--replay" type="button" role="menuitem" data-sound="replay">
+            <img class="hud-menu__ico" src="assets/skai/icon-replay.svg" width="38.9008" height="38.9009" alt="">
+            <span class="hud-menu__text">Replay<br>Narration</span>
+          </button>
+          <button class="hud-menu__item hud-menu__item--mute" type="button" role="menuitemcheckbox" aria-checked="false" data-sound="mute">
+            <img class="hud-menu__ico" src="assets/skai/icon-mute-ring.svg" width="38.9007" height="38.9009" alt="">
+            <img class="hud-menu__ico-inner" src="assets/skai/icon-mute-speaker.svg" width="22.9916" height="15.699" alt="">
+            <span class="hud-menu__text">Mute All<br>Sounds</span>
+          </button>
+        </div>
+      </div>
+      <button id="btnHudInfo" class="hud-hex hud-hex--info" type="button" aria-label="Menu" aria-haspopup="dialog">
+        <span class="hud-hex__turn"><img src="assets/skai/hex-info.svg" width="71.3417" height="64.025" alt=""></span>
+        <span class="hud-hex__i" aria-hidden="true">i</span>
+      </button>
+      <div class="hud-timer" id="gameHeaderTimer" role="timer" aria-label="Mission time">
+        <img src="assets/skai/timer-plate.svg" width="188.974" height="77.7637" alt="">
+        <span class="hud-timer__value">00:00</span>
+      </div>
+    </div>
+
+    <!-- right edge: progress ladder (557:2744) — stripes are built by js/app.js -->
+    <div class="hud-ladder" id="gameHeaderProgress" role="progressbar" aria-label="Mission progress" aria-valuemin="0" aria-valuemax="7" aria-valuenow="1">
+      <img class="hud-ladder__plate" src="assets/skai/ladder-plate.svg" width="89.6182" height="629.558" alt="">
+      <div class="hud-ladder__label"><b>1</b>/7</div>
+      <div class="hud-ladder__stripes"></div>
+      <img class="hud-ladder__volt hud-ladder__volt--1" src="assets/skai/ladder-volt.svg" width="12.0002" height="12" alt="">
+      <img class="hud-ladder__volt hud-ladder__volt--2" src="assets/skai/ladder-volt.svg" width="12.0002" height="12" alt="">
+      <img class="hud-ladder__volt hud-ladder__volt--3" src="assets/skai/ladder-volt.svg" width="12.0002" height="12" alt="">
+      <img class="hud-ladder__volt hud-ladder__volt--4" src="assets/skai/ladder-volt.svg" width="12.0002" height="12" alt="">
+    </div>
+
+    <!-- bottom-left: hint bulb (557:2758) — hidden until two wrong attempts -->
+    <button id="btnHudHint" class="hud-hint" type="button" aria-label="Hear Dev's hint" hidden>
+      <img class="hud-hint__disc" src="assets/skai/hint-disc.svg" width="116" height="99" alt="">
+      <img class="hud-hint__base" src="assets/skai/hint-bulb-base.svg" width="35.3762" height="52.0252" alt="">
+      <img class="hud-hint__bulb" src="assets/skai/hint-bulb.svg" width="68.1962" height="55.7132" alt="">
+    </button>
+
+    <!-- bottom: rails + chevrons bracketing the one centred primary action (557:2797) -->
+    <div class="hud-cta is-idle" id="hudCta">
+      <div class="hud-cta__rails" aria-hidden="true">
+        <img class="rail rail--bl" src="assets/skai/rail-bottom-left.svg" width="813" height="30" alt="">
+        <i class="rail-fill rail-fill--l"></i>
+        <img class="rail rail--br" src="assets/skai/rail-bottom-right.svg" width="796" height="30" alt="">
+        <i class="rail-fill rail-fill--r"></i>
+        <img class="rail-chev rail-chev--a" src="assets/skai/rail-chevron.svg" width="44" height="23.5" alt="">
+        <img class="rail-chev rail-chev--b" src="assets/skai/rail-chevron.svg" width="44" height="23.5" alt="">
+        <img class="rail rail--double" src="assets/skai/rail-double.svg" width="489" height="22.5" alt="">
+      </div>
+      <button id="btnHeaderNext" class="cta" type="button">
+        <img class="cta__plate" src="assets/skai/cta-plate.svg" width="475.725" height="135.125" alt="">
+        <img class="cta__screw cta__screw--1" src="assets/skai/cta-screw-a.svg" width="14.7701" height="15.987" alt="">
+        <img class="cta__screw cta__screw--2" src="assets/skai/cta-screw-a.svg" width="14.7701" height="15.987" alt="">
+        <img class="cta__screw cta__screw--3" src="assets/skai/cta-screw-b.svg" width="14.7702" height="15.987" alt="">
+        <img class="cta__screw cta__screw--4" src="assets/skai/cta-screw-c.svg" width="14.7702" height="15.987" alt="">
+        <i class="cta__slot cta__slot--1"></i><i class="cta__slot cta__slot--2"></i><i class="cta__slot cta__slot--3"></i><i class="cta__slot cta__slot--4"></i>
+        <span class="cta__label">Next</span>
+        <span class="cta__progress" aria-hidden="true"><i></i></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= Stage: ten scenes ================= -->
+  <main class="stage" id="stage">
+
+    <!-- 1 · Landing — the title thumbnail, shown whole, with the SKAI CTA (Figma 557:2797) -->
+    <section class="scene" id="scene-entry" data-scene-key="entry" aria-label="The Fake News Detector">
+      <div class="entry">
+        <div class="entry__bg" aria-hidden="true"></div>
+        <div class="entry__art">
+          <img class="entry__thumb" src="assets/thumbnails/fake-news-detector-thumbnail.png" width="1672" height="941"
+               alt="The Fake News Detector: Dev gives a thumbs up beside a phone whose message is stamped FAKE">
+          <h1 class="sr-only">The Fake News Detector</h1>
+          <div class="entry__start">
+            <button id="btnStartMission" class="skai-cta" type="button">
+              <img class="skai-cta__plate" src="assets/skai/cta-plate.svg" width="475.725" height="135.125" alt="">
+              <img class="skai-cta__screw skai-cta__screw--1" src="assets/skai/cta-screw-a.svg" width="14.7701" height="15.987" alt="">
+              <img class="skai-cta__screw skai-cta__screw--2" src="assets/skai/cta-screw-a.svg" width="14.7701" height="15.987" alt="">
+              <img class="skai-cta__screw skai-cta__screw--3" src="assets/skai/cta-screw-b.svg" width="14.7702" height="15.987" alt="">
+              <img class="skai-cta__screw skai-cta__screw--4" src="assets/skai/cta-screw-c.svg" width="14.7702" height="15.987" alt="">
+              <i class="skai-cta__slot skai-cta__slot--1"></i><i class="skai-cta__slot skai-cta__slot--2"></i><i class="skai-cta__slot skai-cta__slot--3"></i><i class="skai-cta__slot skai-cta__slot--4"></i>
+              <span class="skai-cta__label">Start</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Dev intro -->
+    <section class="scene" id="scene-dev-intro" data-scene-key="dev-intro" aria-label="Meet Dev">
+      <div class="intro">
+        <div class="intro__dev"><img id="introDev" src="assets/dev-guide.png" width="1024" height="1536" alt="Dev, your Fake News Detector guide, waving hello"></div>
+        <div class="panel intro__panel">
+          <p class="eyebrow">Meet your guide</p>
+          <h2 class="title intro__hi" id="introHi">Hi!</h2>
+          <p class="lede intro__text" id="introText" aria-live="polite">I’m Dev. Some messages that fly around aren’t true — and they spread fast. Today you and I will build <b>the Fake News Detector</b>: an app that spots suspicious messages. Ready?</p>
+          <ul class="intro__plan">
+            <li><span>1</span>Investigate a message that just arrived</li>
+            <li><span>2</span>Build and test Detector V1</li>
+            <li><span>3</span>Upgrade to V2 and take the final mission</li>
+          </ul>
+          <button id="btnLetsBegin" class="btn" type="button">Let’s Begin</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · The message arrives -->
+    <section class="scene" id="scene-dashboard" data-scene-key="dashboard" data-stage="sceneIdle" aria-label="A message arrives">
+      <div class="pf-rig" id="pfRig">
+        <div class="device is-home" id="pfDevice">
+          <div class="device__chassis">
+            <div class="device__notch"></div>
+            <div class="device__screen">
+              <div class="device__status"><span>10:15</span><span class="device__status-icons" data-icons="status"></span></div>
+
+              <!-- home screen -->
+              <div class="pf-home home" id="pfHome">
+                <div class="home__time">10:15</div>
+                <div class="home__date" id="pfDate">Thursday, 1 October</div>
+                <div class="home__apps" data-icons="apps"></div>
+                <div class="home__dock" data-icons="dock"></div>
+              </div>
+
+              <!-- (1 of 4) home-screen notification -->
+              <div class="notif" id="pfNotif" role="button" aria-label="Open the new message">
+                <span class="notif__app" data-icon="chat"></span>
+                <span>
+                  <span class="notif__meta"><span>CHATS · Class 7B Friends</span><span>now</span></span>
+                  <span class="notif__title">+91 90123 45678</span>
+                  <span class="notif__text">⚠️ URGENT WATER WARNING — School closed for 3 days…</span>
+                </span>
+              </div>
+              <div class="tapcue" id="pfTapCue"><span data-icon="tap"></span>Tap to open</div>
+
+              <!-- (2 of 4) chat preview, shown once the message has closed -->
+              <div class="pf-list" id="pfList">
+                <div class="pf-list__head"><span>Chats</span><span data-icon="search"></span></div>
+                <div class="chatlist">
+                  <div class="chatlist__row is-hot">
+                    <span class="device__avatar device__avatar--friend">7B</span>
+                    <span><b>Class 7B Friends</b><p>↪ ⚠️ URGENT WATER WARNING — School closed for 3 days…</p></span>
+                    <span><time>10:15</time><br><span class="badge">1</span></span>
+                  </div>
+                  <div class="chatlist__row"><span class="device__avatar device__avatar--school">M</span><span><b>Mum</b><p>Lunch box is on the table 🍱</p></span><time>09:02</time></div>
+                  <div class="chatlist__row"><span class="device__avatar device__avatar--monitor">FT</span><span><b>Football Team</b><p>Practice at 4 today!</p></span><time>Yesterday</time></div>
+                  <div class="chatlist__row"><span class="device__avatar">A</span><span><b>Aman</b><p>did u finish the maths sheet?</p></span><time>Yesterday</time></div>
+                </div>
+              </div>
+
+              <!-- (3 of 4) the full message in the chat -->
+              <div class="pf-chat" id="pfChat">
+                <div class="device__header"><span data-icon="chev-left"></span><span class="device__avatar device__avatar--friend">7B</span><span class="device__who"><b>Class 7B Friends</b><small>38 members</small></span><span data-icon="dots"></span></div>
+                <div class="device__body">
+                  <span class="device__day">TODAY</span>
+                  <div class="msg pf-msg" id="pfMsg">
+                    <div class="msg__fwd"><span data-icon="forward"></span>Forwarded many times</div>
+                    <div class="msg__from">Unknown number: +91 90123 45678</div>
+                    <div class="msg__head">⚠️ URGENT WATER WARNING ⚠️</div>
+                    <span class="msg__line">The school water tank is contaminated.</span>
+                    <span class="msg__line">School closed for 3 days from tomorrow!</span>
+                    <span class="msg__line">The science test has also been postponed.</span>
+                    <span class="msg__line"><b>Share this with all class groups immediately!!</b></span>
+                    <time class="msg__time">10:15</time>
+                  </div>
+                </div>
+                <div class="device__input"><span>Message</span><i data-icon="mic"></i></div>
+              </div>
+            </div>
+          </div>
+          <i class="device__side device__side--power"></i><i class="device__side device__side--vol"></i>
+        </div>
+        <button id="btnSeeFullMessage" class="btn btn--blue" type="button">See full message</button>
+      </div>
+
+      <div class="pf-decision panel" id="pfDecision">
+        <p class="eyebrow">Your first decision</p>
+        <h2 class="title">What will you do?</h2>
+        <div class="dev-line"><span class="dev-avatar dev-avatar--thinking" data-pose="thinking" aria-hidden="true"></span><p class="dev-line__text">A warning from an unknown number says school is closed — and asks you to share it right now.</p></div>
+        <div class="options options--2">
+          <button id="btnForward" class="pf-choice pf-choice--forward" type="button"><span data-icon="forward"></span>Forward</button>
+          <button id="btnIgnore" class="pf-choice pf-choice--ignore" type="button"><span data-icon="hand"></span>Ignore</button>
+        </div>
+      </div>
+
+      <!-- Forward: the notice reaches many people -->
+      <div class="pf-spread" id="pfSpread" aria-live="polite">
+        <h2 class="pf-spread__title">Oh no. It is <em>already everywhere!</em></h2>
+        <div class="pf-spread__map" id="pfSpreadMap">
+          <svg id="pfSpreadSvg" aria-hidden="true"></svg>
+          <!-- (4 of 4) forward-spread card -->
+          <div class="pf-card" id="pfCard">
+            <b>⚠️ URGENT WATER WARNING</b>
+            School closed for 3 days! Share this with all class groups immediately!!
+            <small>↪ Forwarded many times · +91 90123 45678</small>
+          </div>
+        </div>
+        <div class="pf-spread__foot">
+          <div class="pf-counter"><b id="pfCount">1</b><span>people reached</span></div>
+          <div class="dev-line pf-spread__dev"><span class="dev-avatar dev-avatar--thinking" data-pose="thinking" aria-hidden="true"></span><p class="dev-line__text" id="pfSpreadText">One tap, and it jumped to six groups — then to everyone in them. And we still don’t know if it’s true.</p></div>
+          <button id="btnSpreadInspect" class="btn" type="button"><span data-icon="search"></span>Inspect the message</button>
+        </div>
+      </div>
+
+      <!-- Ignore: Dev's reflection -->
+      <div class="pf-reflect" id="pfReflect">
+        <div class="pf-reflect__dev"><img src="assets/dev-thumbs-up.png" width="1024" height="1536" alt="Dev giving a thumbs up"></div>
+        <div class="panel">
+          <p class="eyebrow">Decision reflection</p>
+          <h2 class="title">Good pause!</h2>
+          <div class="dev-line"><span class="dev-avatar dev-avatar--thumbs" data-pose="thumbs" aria-hidden="true"></span><p class="dev-line__text" id="pfReflectText">You didn’t spread it — that already protects your friends. But ignoring it doesn’t tell us whether it’s true. Let’s find out.</p></div>
+          <div class="banner banner--ok"><span data-icon="check"></span>You stopped the spread.</div>
+          <button id="btnInspect" class="btn" type="button"><span data-icon="search"></span>Inspect the message</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4–9 · Chunks render into these -->
+    <section class="scene" id="scene-chunk2" data-scene-key="chunk2" aria-label="Find the red flags"></section>
+    <section class="scene" id="scene-chunk3" data-scene-key="chunk3" aria-label="Three checks unlocked"></section>
+    <section class="scene" id="scene-chunk4" data-scene-key="chunk4" aria-label="Build Detector V1"></section>
+    <section class="scene" id="scene-chunk5" data-scene-key="chunk5" aria-label="Test Detector V1"></section>
+    <section class="scene" id="scene-chunk6" data-scene-key="chunk6" aria-label="Upgrade to V2"></section>
+    <section class="scene" id="scene-chunk7" data-scene-key="chunk7" aria-label="Final mission"></section>
+
+    <!-- Shared transition between chunks -->
+    <section class="scene" id="scene-complete" data-scene-key="complete" aria-label="Step complete">
+      <div class="inter" id="interBox">
+        <div class="inter__rays" aria-hidden="true"></div>
+        <div class="inter__dev" id="interDev" aria-hidden="true"><img class="dev-figure" src="assets/dev-happy.png" width="1024" height="1536" alt=""></div>
+        <svg class="inter__badge" viewBox="0 0 140 140" aria-hidden="true">
+          <circle class="disc" cx="70" cy="70" r="58"/>
+          <circle class="ring" cx="70" cy="70" r="66"/>
+          <path class="tick" id="interTick" d="M44 72 L62 90 L98 52"/>
+        </svg>
+        <p class="eyebrow" id="interEyebrow">Step complete</p>
+        <h2 class="title title--xl inter__title" id="interTitle">First Decision Made</h2>
+        <p class="inter__next"><span>Next:</span><b id="interNext">Investigate the Message</b></p>
+      </div>
+    </section>
+  </main>
+
+  <div class="dev-pop" id="devPop" role="status" aria-live="polite">
+    <span class="dev-avatar" aria-hidden="true"></span>
+    <p class="dev-pop__bubble" id="devPopText"></p>
+  </div>
+  <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+  <canvas id="fxCanvas" aria-hidden="true"></canvas>
+</div>
+
+<!-- ================= Modals — Info screen, Figma 201:209 =================
+     Panel (201:386) and ✕ tab (201:388) are the Figma exports; content sits in the panel's safe area. -->
+<div class="modal" id="modalPause" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+  <div class="modal__scrim" data-close></div>
+  <div class="modal__card">
+    <img class="modal__panel" src="assets/skai/modal-panel.svg" width="861" height="1440.36" alt="">
+    <button class="modal__close" type="button" data-close aria-label="Close menu">
+      <img src="assets/skai/modal-close.svg" width="183" height="141" alt="">
+    </button>
+    <div class="modal__body">
+      <p class="eyebrow">Mission paused</p>
+      <h2 id="pauseTitle">Menu</h2>
+      <div class="modal__stats"><span>Time <b id="pauseTime">00:00</b></span><span>Step <b id="pauseStep">1/7</b></span></div>
+      <div class="menu-grid">
+        <button class="menu-item" type="button" data-menu="back"><span class="ring" data-icon="chev-left"></span>Previous Screen</button>
+        <button class="menu-item" type="button" data-menu="voice" aria-pressed="true"><span class="ring" data-icon="voice"></span><span>Voice <small id="voiceState">On</small></span></button>
+        <button class="menu-item" type="button" data-menu="hear"><span class="ring" data-icon="replay"></span>Hear Again</button>
+        <button class="menu-item" type="button" data-menu="info"><span class="ring" data-icon="info"></span>Mission Info</button>
+        <button class="menu-item" type="button" data-menu="fullscreen"><span class="ring" data-icon="fullscreen"></span>Fullscreen</button>
+        <button class="menu-item menu-item--danger" type="button" data-menu="restart"><span class="ring" data-icon="restart"></span>Restart</button>
+        <button class="menu-item menu-item--wide menu-item--primary" type="button" data-menu="resume"><span class="ring" data-icon="play"></span>Resume</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalInfo" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal__scrim" data-close></div>
+  <div class="modal__card">
+    <img class="modal__panel" src="assets/skai/modal-panel.svg" width="861" height="1440.36" alt="">
+    <button class="modal__close" type="button" data-close aria-label="Close mission info">
+      <img src="assets/skai/modal-close.svg" width="183" height="141" alt="">
+    </button>
+    <div class="modal__body modal__body--center">
+      <p class="eyebrow">Mission info</p>
+      <h2 id="infoTitle">The Fake News Detector</h2>
+      <p>A forwarded warning is racing through your class groups. Investigate it, turn the red flags you find into checks, build Detector V1 and test it — then upgrade to V2 with Proof and Confirm, and use all five checks to decide what to trust, what to verify and what never to share.</p>
+      <div class="btn-row"><button class="btn" type="button" data-close>Got it</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalReplay" role="alertdialog" aria-modal="true" aria-labelledby="replayTitle" aria-describedby="replayText">
+  <div class="modal__scrim" data-close></div>
+  <div class="modal__card modal__card--sm">
+    <img class="modal__panel" src="assets/skai/modal-panel.svg" width="861" height="1440.36" alt="">
+    <button class="modal__close" type="button" data-close aria-label="Keep playing">
+      <img src="assets/skai/modal-close.svg" width="183" height="141" alt="">
+    </button>
+    <div class="modal__body modal__body--center">
+      <p class="eyebrow">Restart</p>
+      <h2 id="replayTitle">Start over?</h2>
+      <p id="replayText">This clears your progress, resets the timer and takes you back to the start of the mission.</p>
+      <div class="btn-row">
+        <button class="btn btn--red" type="button" id="btnConfirmRestart">Yes, restart</button>
+        <button class="btn btn--ghost" type="button" data-close>Keep playing</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="position:fixed;inset:auto 0 0;padding:16px;background:#fff;color:#000;text-align:center">The Fake News Detector needs JavaScript to run.</p></noscript>
+
+<!-- Animation & logic libraries (vendored so the game also runs offline / from file://) -->
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/CustomEase.min.js"></script>
+<script src="vendor/Draggable.min.js"></script>
+<script src="vendor/Flip.min.js"></script>
+<script src="vendor/MotionPathPlugin.min.js"></script>
+<script src="vendor/SplitText.min.js"></script>
+<script src="vendor/ScrambleTextPlugin.min.js"></script>
+<script src="vendor/DrawSVGPlugin.min.js"></script>
+<script src="vendor/TextPlugin.min.js"></script>
+<script src="vendor/Physics2DPlugin.min.js"></script>
+<script src="vendor/xstate.umd.min.js"></script>
+<script src="vendor/howler.min.js"></script>
+<script src="vendor/Tone.js"></script>
+<script src="vendor/confetti.browser.min.js"></script>
+<script src="vendor/Sortable.min.js"></script>
+<script src="vendor/rough-notation.iife.js"></script>
+
+<!-- Game -->
+<script src="js/state.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/device.js"></script>
+<script src="js/phone-focus.js"></script>
+<script src="js/chunks/chunk-base.js"></script>
+<script src="js/chunks/chunk-02-investigation.js"></script>
+<script src="js/chunks/chunk-03-checks.js"></script>
+<script src="js/chunks/chunk-04-build.js"></script>
+<script src="js/chunks/chunk-05-test.js"></script>
+<script src="js/chunks/chunk-06-upgrade.js"></script>
+<script src="js/chunks/chunk-07-final.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

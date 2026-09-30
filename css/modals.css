@@ -1,0 +1,178 @@
+/* ==========================================================================
+   Modals — Pause (settings), Info, Replay confirm — Info screen, Figma 201:209.
+
+   The panel (201:386) is the 861 × 1440 export, turned 90° into the
+   1440 × 861 landscape card it is in the design; the orange ✕ tab (201:388)
+   sits on its top-right corner. Both keep their exported proportions at any
+   size. On a portrait phone the same panel is used upright.
+   All three close on the ✕ tab, on Escape and via their own buttons.
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  visibility: hidden;
+}
+.modal.is-open { visibility: visible; }
+.modal img { display: block; max-width: none; }
+
+.modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 6, 6, .44);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal__card {
+  --mw: min(calc(1440.36 * var(--u)), 92vw, calc(86vh * 1.67289));
+  position: relative;
+  left: calc(var(--mw) * -0.031);      /* the design sets the panel a little left so its ✕ tab clears the edge */
+  width: var(--mw);
+  aspect-ratio: 1440.36 / 861;
+  container-type: size;
+  color: #fff;
+}
+.modal__card--sm { --mw: min(calc(960 * var(--u)), 92vw, calc(86vh * 1.67289)); }
+
+.modal__panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100cqh;
+  height: 100cqw;
+  transform: translate(-50%, -50%) rotate(90deg);
+  pointer-events: none;
+}
+
+.modal__close {
+  position: absolute;
+  left: 91.99%;
+  top: -4.3%;
+  width: 12.71%;
+  height: 16.38%;
+  border: 0;
+  padding: 0;
+  background: none;
+  z-index: 2;
+  transition: filter .15s;
+}
+.modal__close img { width: 100%; height: 100%; }
+.modal__close:hover { filter: brightness(1.08); }
+.modal__close:focus-visible { outline-offset: -6px; }
+
+/* content sits inside the panel's slanted edges */
+.modal__body {
+  position: absolute;
+  inset: 14% 11% 6% 11%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  scrollbar-width: thin;
+}
+.modal__body--center { align-items: flex-start; }
+
+.modal .eyebrow { font-size: max(12px, 1.05cqw); margin-bottom: .4em; }
+.modal h2 {
+  font-family: var(--font-hud);
+  font-weight: 700;
+  font-size: max(24px, 3.1cqw);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  margin: 0 0 .3em;
+}
+.modal p { font-size: max(15px, 1.45cqw); line-height: 1.55; color: var(--mist); margin: 0 0 1em; max-width: 62ch; }
+.modal__card--sm h2 { font-size: max(24px, 4.2cqw); }
+.modal__card--sm p { font-size: max(15px, 2.1cqw); }
+
+.menu-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: max(8px, 1cqw); margin-top: max(10px, 1.4cqw); }
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: max(10px, 1cqw);
+  min-height: max(46px, 4.9cqw);
+  padding: .4em 1em;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  font-family: var(--font-hud);
+  font-weight: 700;
+  font-size: max(15px, 1.35cqw);
+  letter-spacing: .04em;
+  text-align: left;
+  transition: border-color .2s, background .2s;
+}
+.menu-item:hover:not(:disabled) { border-color: var(--cyan); background: rgba(255, 255, 255, .12); }
+.menu-item:disabled { opacity: .4; }
+.menu-item .ring {
+  flex: none;
+  width: 2.2em; height: 2.2em;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: grid; place-items: center;
+}
+.menu-item .ring svg { width: 1.1em; height: 1.1em; }
+.menu-item[aria-pressed="false"] .ring { opacity: .6; }
+.menu-item[aria-pressed="true"] .ring { background: var(--ok); border-color: var(--ok); }
+.menu-item--danger:hover:not(:disabled) { border-color: var(--fail); }
+.menu-item--danger .ring { border-color: #ff9aa2; color: #ff9aa2; }
+.menu-item--wide { grid-column: 1 / -1; justify-content: center; }
+.menu-item--primary { background: var(--orange); border-color: var(--orange); }
+.menu-item--primary:hover:not(:disabled) { background: #ffb13a; border-color: #fff; }
+.menu-item small { display: block; font-family: var(--font-body); font-size: .75em; font-weight: 700; letter-spacing: 0; color: rgba(255,255,255,.6); }
+
+.modal__stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: .2em 0 .2em;
+}
+.modal__stats span {
+  padding: .35em .9em;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .1);
+  font-weight: 800;
+  font-size: max(13px, 1.05cqw);
+}
+.modal__stats b { color: var(--orange); font-family: var(--font-hud); }
+
+/* portrait phones: the same panel, upright */
+@media (max-width: 760px) and (orientation: portrait) {
+  .modal__card,
+  .modal__card--sm {
+    --mw: min(92vw, calc(84vh * 0.59777));
+    left: 0;
+    aspect-ratio: 861 / 1440.36;
+  }
+  .modal__card--sm { --mw: min(92vw, calc(64vh * 0.59777)); }
+  .modal__panel { width: 100cqw; height: 100cqh; transform: translate(-50%, -50%); }
+  .modal__close { left: auto; right: -4%; top: -2.6%; width: 25%; height: auto; }
+  .modal__close img { height: auto; }
+  .modal__body { inset: 10% 5% 11% 12%; justify-content: flex-start; }
+  .modal h2, .modal__card--sm h2 { font-size: 26px; }
+  .modal p, .modal__card--sm p { font-size: 15.5px; }
+  .menu-grid { grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
+  .menu-item { min-height: 40px; font-size: 14px; padding: 4px 12px; }
+  .modal__stats span { font-size: 12.5px; }
+}
+
+/* phones on their side: the same landscape panel, tighter inside */
+@media (orientation: landscape) and (max-height: 540px) {
+  .modal__card, .modal__card--sm { --mw: min(92vw, calc(88vh * 1.67289)); }
+  .modal__body { inset: 12% 10% 5% 10%; justify-content: flex-start; }
+  .modal .eyebrow { display: none; }
+  .modal h2, .modal__card--sm h2 { font-size: 20px; }
+  .modal p, .modal__card--sm p { font-size: 13.5px; margin-bottom: .6em; }
+  .modal__stats span { font-size: 11.5px; padding: .2em .7em; }
+  .menu-grid { gap: 5px; margin-top: 6px; }
+  .menu-item { min-height: 32px; font-size: 12.5px; padding: 2px 10px; gap: 8px; }
+  .menu-item .ring { width: 1.9em; height: 1.9em; }
+  .modal .btn { min-height: 36px; padding: 6px 14px; font-size: 13px; }
+}
