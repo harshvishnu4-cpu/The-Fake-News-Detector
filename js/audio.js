@@ -3,7 +3,7 @@
 
    Narration: every line has a key. Dev's lines are recorded with ElevenLabs
    (voice "Bittu – Heavy Kid Cartoon Character", 4iqKdEXMW8NRF8USiS3Q, model
-   eleven_multilingual_v2) as audio/<key>.mp3 and play through Howler. If a
+   eleven_multilingual_v2) as assets/audio/<key>.mp3 and play through Howler. If a
    file is missing or fails to load, Dev reads the NARRATION text with the
    browser's speech synthesis instead. With voice off (or everything muted)
    the promise still resolves after the line's length, so every screen that
@@ -19,7 +19,7 @@
 
   const FND = (window.FND = window.FND || {});
 
-  /** key → recording. Filled below from NARRATION: every line has audio/<key>.mp3. */
+  /** key → recording. Filled below from NARRATION: every line has assets/audio/<key>.mp3. */
   const AUDIO_MAP = {};
 
   const NARRATION = {
@@ -82,7 +82,7 @@
 
   // message_body is left unrecorded on purpose: the dashboard then reads open_message +
   // first_decision, which also name the unknown sender (the first red flag).
-  Object.keys(NARRATION).forEach((key) => { if (key !== "message_body") AUDIO_MAP[key] = `audio/${key}.mp3`; });
+  Object.keys(NARRATION).forEach((key) => { if (key !== "message_body") AUDIO_MAP[key] = `assets/audio/${key}.mp3`; });
 
   /* ---------------- narration ---------------- */
 
